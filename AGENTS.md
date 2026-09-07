@@ -109,13 +109,15 @@ const page  = await safe(() => studio.dataset('site', 'pages').get(uid), null);
 ```bash
 npm install
 npm run dev      # http://localhost:4321
-npm run build
+npm run build    # ends with the SEO gate; a hard fault fails the build
+npm run seo:gate # run the SEO gate against the current build
 npm run start    # prod server (node server.mjs)
 ```
 
 ## Definition of done (before you say it's finished)
 
-- [ ] `npm run build` passes
+- [ ] `npm run build` passes, SEO gate included (see the SEO gate section in README.md)
+- [ ] No new `[seo-gate] WARN` you introduced and left behind
 - [ ] No raw StudioLayer host in the rendered HTML (`curl … | grep studiolayer` = 0)
 - [ ] New media renders through `/cdn/…`
 - [ ] No secret value committed; new env vars added to `.env.example` + README

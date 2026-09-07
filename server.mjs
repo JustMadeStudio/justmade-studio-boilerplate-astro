@@ -20,6 +20,13 @@ if (missing.length) {
   console.warn(`[env] Missing ${missing.join(', ')} - CMS calls will fail until set.`);
 }
 
+// The node adapter is configured in `standalone` mode, so importing the entry
+// starts its OWN http server on PORT unless it is told not to. This file exists
+// precisely to wrap that handler in a server of its own, so the two would race
+// for the same port and the container would die on boot with EADDRINUSE. Must
+// be set BEFORE the import: the entry checks it at module evaluation time.
+process.env.ASTRO_NODE_AUTOSTART = 'disabled';
+
 const { handler: astroHandler } = await import('./dist/server/entry.mjs');
 
 const PORT = Number(process.env.PORT) || 4321;

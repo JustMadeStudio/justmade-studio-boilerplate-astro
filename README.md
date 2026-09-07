@@ -90,6 +90,33 @@ Only the canonical `PUBLIC_SITE_URL` host is indexable. Every other host - previ
 
 `robots.txt`, `sitemap.xml` and a `/health` liveness probe are all dynamic routes.
 
+## SEO gate
+
+`npm run build` ends with `scripts/seo-gate.mjs`, so a build with a real SEO fault fails and never deploys. It boots the freshly built server on a loopback port, pretends to be the canonical host (otherwise the indexing guard noindexes everything), then crawls `robots.txt`, `sitemap.xml` and the pages the sitemap lists.
+
+The split is deliberate: **machine-objective and indexing-determining is a fail, quality and interpretation is a warn.** A gate that fails on a 62-character title gets switched off within a week, and then it catches nothing.
+
+| Blocks the build | Reported for review |
+| --- | --- |
+| `PUBLIC_SITE_URL` unset (whole site would be noindex) | `<title>` outside 15-60 characters |
+| canonical missing, or not self-referencing | meta description missing or outside 120-160 |
+| a `noindex` page that the sitemap still lists | `<img>` without `alt` (decorative images live here too) |
+| `robots.txt` not 200, or disallowing its own sitemap | missing Open Graph / Twitter tags |
+| more than one `<h1>`, or none | no `hreflang` once the site serves several languages |
+| JSON-LD that does not parse | |
+| `<title>` missing entirely | |
+| a sitemap URL that does not answer 200 | |
+
+```bash
+npm run seo:gate            # run it against the current build
+SEO_GATE=off npm run build  # escape hatch, use knowingly
+SEO_GATE_MAX_PAGES=100      # crawl deeper than the default 25
+```
+
+Pass `PUBLIC_SITE_URL` as a build arg (the Dockerfile takes one), or the gate fails the image build. Without CMS credentials at build time the gate still runs and checks page structure, with content unavailable.
+
+This is layer 1. Everything a script cannot judge - keyword mapping, URL structure, internal linking, schema choice - is layer 2: a human SEO review that blocks go-live separately.
+
 ## Layout
 
 ```
@@ -100,6 +127,8 @@ src/
   layouts/    Base (head, OG, sl.js embed)
   styles/     app.css (Tailwind 4 @theme tokens)
   middleware.ts   security headers + CSP + indexing guard
+scripts/
+  seo-gate.mjs  postbuild SEO gate (blocks the build on an indexing fault)
 server.mjs    prod server (immutable cache on hashed assets)
 Dockerfile    multi-stage build + healthcheck
 ```

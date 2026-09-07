@@ -10,6 +10,13 @@ ENV NODE_OPTIONS=--max-old-space-size=1536
 COPY package*.json ./
 RUN npm install
 
+# The build ends with the SEO gate (scripts/seo-gate.mjs), which needs to know
+# the canonical host: without it every page is served noindex and the gate has
+# nothing meaningful to check, so it fails the image build on purpose. Pass it
+# from the host (Coolify build arg / `docker build --build-arg`).
+ARG PUBLIC_SITE_URL
+ENV PUBLIC_SITE_URL=$PUBLIC_SITE_URL
+
 COPY . .
 RUN npm run build
 

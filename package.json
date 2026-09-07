@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "postbuild": "node ./scripts/seo-gate.mjs",
+    "seo:gate": "node ./scripts/seo-gate.mjs",
     "preview": "astro preview",
     "start": "node ./server.mjs",
     "check": "astro check",
