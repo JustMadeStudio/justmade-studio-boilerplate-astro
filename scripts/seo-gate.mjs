@@ -151,7 +151,7 @@ async function bootServer(attempts = 4) {
   // Coolify build with its env attached) they are used untouched and the gate
   // sees the real pages.
   const cmsStub = {};
-  for (const key of ['STUDIOLAYER_API_KEY', 'STUDIOLAYER_PROJECT']) {
+  for (const key of ['JUSTMADE_API_KEY', 'JUSTMADE_PROJECT']) {
     if (!(process.env[key] || '').trim()) cmsStub[key] = 'seo-gate-placeholder';
   }
   if (Object.keys(cmsStub).length) {

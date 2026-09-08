@@ -3,7 +3,7 @@
  *
  * Why route media through /cdn/:
  *   1. The markup only ever contains /cdn/<uuid>.webp - visitors never see that
- *      the media comes from an external CDN (StudioLayer).
+ *      the media comes from an external CDN (Justmade Studio).
  *   2. Same-origin: no extra DNS/TLS handshake, no third-party cookies, and the
  *      proxy resizes + re-encodes server-side (WebP/AVIF) and caches hard.
  *
@@ -16,11 +16,11 @@
  * <link rel=preload>, og:image). <CdnImage>/<CdnSource> are ergonomic wrappers.
  */
 
-const BASE_URL = import.meta.env.STUDIOLAYER_BASE_URL || 'https://app.studiolayer.io';
-const PROJECT = import.meta.env.STUDIOLAYER_PROJECT || '';
-const CDN_ORIGIN = import.meta.env.STUDIOLAYER_CDN_ORIGIN || 'https://cdn.studiolayer.io';
+const BASE_URL = import.meta.env.JUSTMADE_BASE_URL || 'https://studio.justmade.be';
+const PROJECT = import.meta.env.JUSTMADE_PROJECT || '';
+const CDN_ORIGIN = import.meta.env.JUSTMADE_CDN_ORIGIN || 'https://cdn.studiolayer.io';
 const BUCKET =
-  (import.meta.env.STUDIOLAYER_CDN_BUCKET as string | undefined) ||
+  (import.meta.env.JUSTMADE_CDN_BUCKET as string | undefined) ||
   (PROJECT ? `production/projects/${PROJECT}/` : 'production/');
 
 const CDN_PREFIX = `${CDN_ORIGIN.replace(/\/$/, '')}/${BUCKET.replace(/^\/+/, '')}`;

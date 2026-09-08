@@ -1,6 +1,6 @@
-# StudioLayer Astro Boilerplate
+# Justmade Studio Astro Boilerplate
 
-Astro SSR + [StudioLayer](https://studiolayer.io) as a headless CMS. The starting point we clone for a new site: fast, env-driven, brandless, ready for prod on day one.
+Astro SSR + [Justmade Studio](https://studio.justmade.be) as a headless CMS. The starting point we clone for a new site: fast, env-driven, brandless, ready for prod on day one.
 
 No client name, domain or key is baked in. Set your env, wire up your content, ship.
 
@@ -10,14 +10,14 @@ No client name, domain or key is baked in. Set your env, wire up your content, s
 |---|---|
 | **Framework** | Astro, `output: 'server'`, `@astrojs/node` standalone |
 | **Styling** | Tailwind 4 via `@tailwindcss/vite` - tokens in `src/styles/app.css` (`@theme`), no config file |
-| **CMS** | `@studiolayer/client` |
+| **CMS** | `@justmade/client` |
 | **Images** | `sharp` - server-side resize + AVIF/WebP, same-origin proxy |
 | **Lang** | TypeScript strict, `@/*` -> `src/*` |
 
 ## Quick start
 
 ```bash
-cp .env.example .env      # fill STUDIOLAYER_API_KEY + STUDIOLAYER_PROJECT
+cp .env.example .env      # fill JUSTMADE_API_KEY + JUSTMADE_PROJECT
 npm install
 npm run dev               # http://localhost:4321
 ```
@@ -33,12 +33,12 @@ Node 22 (see `.nvmrc`).
 
 | Var | Required | What |
 |---|---|---|
-| `STUDIOLAYER_API_KEY` | yes | Content API key. Store as a secret in your host env, never in the repo. |
-| `STUDIOLAYER_PROJECT` | yes | Project slug. Also drives the default media bucket. |
+| `JUSTMADE_API_KEY` | yes | Content API key. Store as a secret in your host env, never in the repo. |
+| `JUSTMADE_PROJECT` | yes | Project slug. Also drives the default media bucket. |
 | `PUBLIC_SITE_URL` | prod | Canonical URL. Without it nothing is treated as production and the site stays `noindex`. |
-| `STUDIOLAYER_BASE_URL` | no | App origin. Defaults to `https://app.studiolayer.io`. |
-| `STUDIOLAYER_CDN_ORIGIN` | no | Media CDN origin. Server-side only. |
-| `STUDIOLAYER_CDN_BUCKET` | no | Override the default bucket prefix. |
+| `JUSTMADE_BASE_URL` | no | App origin. Defaults to `https://studio.justmade.be`. |
+| `JUSTMADE_CDN_ORIGIN` | no | Media CDN origin. Server-side only. |
+| `JUSTMADE_CDN_BUCKET` | no | Override the default bucket prefix. |
 
 `assertEnv()` runs at boot: it throws in production when a required var is missing, so a broken deploy dies at startup instead of serving half a site. In dev it just warns.
 
@@ -54,7 +54,7 @@ const page  = await safe(() => studio.dataset('site', 'pages').get(uid), null);
 
 ## Images
 
-Everything goes through `/cdn/<key>` - same origin, so the markup never exposes the StudioLayer backend, and the proxy resizes + re-encodes (AVIF/WebP) and caches hard.
+Everything goes through `/cdn/<key>` - same origin, so the markup never exposes the Justmade Studio backend, and the proxy resizes + re-encodes (AVIF/WebP) and caches hard.
 
 ```ts
 import { cdn } from '@/lib/studio';
@@ -145,5 +145,5 @@ Any host that runs a container or a node process. Build the image, set the env, 
 
 - Astro: https://docs.astro.build/en/getting-started/
 - Astro node adapter (SSR): https://docs.astro.build/en/guides/integrations-guide/node/
-- StudioLayer: https://studiolayer.io
+- Justmade Studio: https://studio.justmade.be
 - Tailwind 4: https://tailwindcss.com/docs

@@ -10,8 +10,8 @@
 type Rule = { key: string; required: boolean; hint: string };
 
 const RULES: Rule[] = [
-  { key: 'STUDIOLAYER_API_KEY', required: true, hint: 'Content API key from StudioLayer. Store it as a secret in your host env.' },
-  { key: 'STUDIOLAYER_PROJECT', required: true, hint: 'Project slug in StudioLayer (also drives the default media bucket).' },
+  { key: 'JUSTMADE_API_KEY', required: true, hint: 'Content API key from Justmade Studio. Store it as a secret in your host env.' },
+  { key: 'JUSTMADE_PROJECT', required: true, hint: 'Project slug in Justmade Studio (also drives the default media bucket).' },
   { key: 'PUBLIC_SITE_URL', required: false, hint: 'Canonical production URL. Without it, nothing is treated as production and the whole site stays noindex.' },
 ];
 

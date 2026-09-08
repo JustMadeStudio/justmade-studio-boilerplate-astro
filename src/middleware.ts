@@ -10,15 +10,15 @@ assertEnv();
  * Three responsibilities, applied to every response:
  *
  * 1. Security headers - sane defaults on every route.
- * 2. CSP frame-ancestors - the site can be embedded in the StudioLayer inline
- *    editor (preview iframe on app.studiolayer.io) but is clickjack-protected
+ * 2. CSP frame-ancestors - the site can be embedded in the Justmade Studio inline
+ *    editor (preview iframe on studio.justmade.be) but is clickjack-protected
  *    everywhere else.
  * 3. Indexing guard - only the canonical production host (PUBLIC_SITE_URL) may be
  *    indexed. Every other host (preview/staging deploys, raw IPs, localhost)
  *    gets `X-Robots-Tag: noindex, nofollow`. The dynamic robots.txt and sitemap
  *    enforce the same rule at the crawl level.
  */
-const APP_ORIGIN = process.env.STUDIOLAYER_BASE_URL || 'https://app.studiolayer.io';
+const APP_ORIGIN = process.env.JUSTMADE_BASE_URL || 'https://studio.justmade.be';
 
 export const onRequest = defineMiddleware(async (ctx, next) => {
   const res = await next();

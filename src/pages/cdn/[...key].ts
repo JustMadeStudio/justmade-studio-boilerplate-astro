@@ -12,7 +12,7 @@ import sharp from 'sharp';
  *   /cdn/_a/api/files/<uid>       -> app-origin file (rare)
  *
  * The upstream host is hardcoded SERVER-SIDE (via env), never in the client URL.
- * So nothing in the markup/network tab reveals the media comes from StudioLayer,
+ * So nothing in the markup/network tab reveals the media comes from Justmade Studio,
  * and there is no SSRF risk: the visitor only supplies a path key, not a host.
  *
  * Format: `?f=avif|webp|jpeg|png` forces an output format. Without it, the route
@@ -26,11 +26,11 @@ import sharp from 'sharp';
 export const prerender = false;
 
 // ─── Config (env-driven) ─────────────────────────────────────────────────────
-const CDN_ORIGIN = (process.env.STUDIOLAYER_CDN_ORIGIN || 'https://cdn.studiolayer.io').replace(/\/$/, '');
-const APP_ORIGIN = (process.env.STUDIOLAYER_BASE_URL || 'https://app.studiolayer.io').replace(/\/$/, '');
-const PROJECT = process.env.STUDIOLAYER_PROJECT || '';
+const CDN_ORIGIN = (process.env.JUSTMADE_CDN_ORIGIN || 'https://cdn.studiolayer.io').replace(/\/$/, '');
+const APP_ORIGIN = (process.env.JUSTMADE_BASE_URL || 'https://studio.justmade.be').replace(/\/$/, '');
+const PROJECT = process.env.JUSTMADE_PROJECT || '';
 const BUCKET = (
-  process.env.STUDIOLAYER_CDN_BUCKET ||
+  process.env.JUSTMADE_CDN_BUCKET ||
   (PROJECT ? `production/projects/${PROJECT}/` : 'production/')
 ).replace(/^\/+/, '');
 

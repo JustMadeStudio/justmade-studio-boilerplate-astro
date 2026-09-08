@@ -4,11 +4,11 @@ import Base from '@/layouts/Base.astro';
 // import CdnImage from '@/components/CdnImage.astro';
 // import CdnSource from '@/components/CdnSource.astro';
 
-// Example: fetch content from StudioLayer.
+// Example: fetch content from Justmade Studio.
 // const posts = await studio.dataset('blog', 'posts').list();
 
-const title = 'StudioLayer Astro Boilerplate';
-const description = 'Astro SSR + StudioLayer headless CMS, with same-origin media cloaking.';
+const title = 'Justmade Studio Astro Boilerplate';
+const description = 'Astro SSR + Justmade Studio headless CMS, with same-origin media cloaking.';
 ---
 <Base title={title} description={description}>
   <main class="mx-auto max-w-2xl px-6 py-24">
@@ -18,7 +18,7 @@ const description = 'Astro SSR + StudioLayer headless CMS, with same-origin medi
     <ul class="mt-10 space-y-2 text-sm">
       <li>✓ Astro SSR (node standalone adapter)</li>
       <li>✓ Tailwind 4 via <code>@tailwindcss/vite</code></li>
-      <li>✓ StudioLayer client in <code>src/lib/studio.ts</code></li>
+      <li>✓ Justmade Studio client in <code>src/lib/studio.ts</code></li>
       <li>✓ Media cloaking at <code>/cdn/&lt;uuid&gt;</code> (resize + AVIF/WebP + cache)</li>
       <li>✓ Indexing guard (only the production host is indexable)</li>
       <li>✓ Prod-ready Docker (multi-stage)</li>
@@ -42,7 +42,7 @@ const description = 'Astro SSR + StudioLayer headless CMS, with same-origin medi
     */}
 
     <p class="mt-10 text-sm opacity-60">
-      Copy <code>.env.example</code> to <code>.env</code>, fill in your StudioLayer key,
+      Copy <code>.env.example</code> to <code>.env</code>, fill in your Justmade Studio key,
       and start with <code>npm run dev</code>. See <code>README.md</code>.
     </p>
   </main>

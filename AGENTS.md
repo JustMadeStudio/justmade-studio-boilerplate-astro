@@ -5,7 +5,7 @@ Rules and context for AI agents working in this repo. Read this before editing.
 
 ## What this is
 
-A brandless starter for a website on **Astro SSR** with **StudioLayer** as a
+A brandless starter for a website on **Astro SSR** with **Justmade Studio** as a
 headless CMS. Everything is env-driven: no client name, domain or key is
 hardcoded. When you build a real site on top of this, keep it that way.
 
@@ -13,7 +13,7 @@ hardcoded. When you build a real site on top of this, keep it that way.
 
 - Astro, `output: 'server'`, `@astrojs/node` standalone adapter
 - Tailwind 4 via `@tailwindcss/vite` (no `tailwind.config.js` - tokens live in `src/styles/app.css` under `@theme`)
-- `@studiolayer/client` for all CMS reads
+- `@justmade/client` for all CMS reads
 - `sharp` for server-side image resize + AVIF/WebP encoding
 - TypeScript strict, path alias `@/*` -> `src/*`
 
@@ -38,14 +38,14 @@ Docs to consult before touching framework behaviour:
    (`fetch(`${url.origin}/...`)`), not from the filesystem.
 
 3. **All CMS media goes through `/cdn/<key>`.** Never emit a raw
-   `cdn.studiolayer.io` / `app.studiolayer.io` URL into the markup - it leaks the
+   CDN / `studio.justmade.be` URL into the markup - it leaks the
    backend and skips resizing/caching. Use `cdn()` / `cdnSrcSet()` from
    `src/lib/cdn.ts` (re-exported from `@/lib/studio`), or the `<CdnImage>` /
    `<CdnSource>` components. If you add a new media source, extend
    `resolveTarget()` in `src/pages/cdn/[...key].ts` AND `toKey()` in
    `src/lib/cdn.ts` together - their key shapes must stay in sync.
 
-4. **Never hardcode or commit secrets.** `STUDIOLAYER_API_KEY` and friends come
+4. **Never hardcode or commit secrets.** `JUSTMADE_API_KEY` and friends come
    from env only. `.env` is gitignored; only `.env.example` is committed. When a
    new secret is needed, add it to `.env.example` (empty), document it in the
    README table, and register it in `src/lib/env.ts` if it is required at boot.
@@ -58,7 +58,7 @@ Docs to consult before touching framework behaviour:
    `Astro.url.host` directly (the node adapter reports it as `localhost`; the
    real host is in `x-forwarded-host`).
 
-6. **Keep the `sl.js` embed.** `Base.astro` injects the StudioLayer inline-editor
+6. **Keep the `sl.js` embed.** `Base.astro` injects the Justmade Studio inline-editor
    script, but only inside the preview iframe (`window.self !== window.top`).
    This powers Surfaces / inline editing. Don't remove it or load it eagerly.
 
@@ -96,7 +96,7 @@ Dockerfile                  multi-stage build + healthcheck
 
 ## Reads that can fail
 
-Wrap every CMS read in `safe()` from `@/lib/studio` so a StudioLayer hiccup
+Wrap every CMS read in `safe()` from `@/lib/studio` so a Justmade Studio hiccup
 degrades to a fallback instead of a 500:
 
 ```ts
@@ -118,7 +118,7 @@ npm run start    # prod server (node server.mjs)
 
 - [ ] `npm run build` passes, SEO gate included (see the SEO gate section in README.md)
 - [ ] No new `[seo-gate] WARN` you introduced and left behind
-- [ ] No raw StudioLayer host in the rendered HTML (`curl … | grep studiolayer` = 0)
+- [ ] No raw Justmade Studio / CDN host in the rendered HTML (`curl … | grep -E 'justmade|cdn\.'` = 0)
 - [ ] New media renders through `/cdn/…`
 - [ ] No secret value committed; new env vars added to `.env.example` + README
 - [ ] Preview host still `noindex`, production host still indexable

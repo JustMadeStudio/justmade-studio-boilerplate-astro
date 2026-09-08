@@ -9,7 +9,7 @@ import http from 'node:http';
 // Fail loud and early: a prod deploy missing a required var must die before it
 // binds the port, not serve half a site on the first CMS request. Kept in sync
 // with src/lib/env.ts (which does the same for `astro dev`).
-const REQUIRED = ['STUDIOLAYER_API_KEY', 'STUDIOLAYER_PROJECT'];
+const REQUIRED = ['JUSTMADE_API_KEY', 'JUSTMADE_PROJECT'];
 const missing = REQUIRED.filter((k) => !(process.env[k] || '').trim());
 if (missing.length && process.env.NODE_ENV === 'production') {
   console.error(`[env] Missing required environment variables: ${missing.join(', ')}`);

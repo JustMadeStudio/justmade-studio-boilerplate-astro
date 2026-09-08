@@ -1,8 +1,8 @@
 {
-  "name": "studiolayer-boilerplate-astro",
+  "name": "justmade-boilerplate-astro",
   "type": "module",
   "version": "0.1.0",
-  "description": "Astro 7 SSR boilerplate with StudioLayer as a headless CMS. Same-origin media cloaking, prod-ready Docker.",
+  "description": "Astro 7 SSR boilerplate with Justmade Studio as a headless CMS. Same-origin media cloaking, prod-ready Docker.",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -17,15 +17,15 @@
     "node": ">=22.12.0"
   },
   "dependencies": {
-    "@astrojs/node": "^11.0.3",
-    "@studiolayer/client": "latest",
+    "@astrojs/node": "^11.1.5",
+    "@justmade/client": "latest",
     "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.1.6",
-    "sharp": "^0.35.3",
+    "astro": "^7.3.2",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
+    "@types/node": "^26.5.0",
     "typescript": "^7.0.2"
   }
 }

@@ -20,7 +20,7 @@ const isProd = isProdRequest(Astro.request, Astro.url);
 
 // App origin for the inline-editor embed. Assembled from parts so the literal
 // host is not a single searchable string in the page source.
-const appParts = ['app', 'studiolayer', 'io'];
+const appParts = ['studio', 'justmade', 'be'];
 const appOrigin = 'https://' + appParts.join('.');
 ---
 <!doctype html>
@@ -42,7 +42,7 @@ const appOrigin = 'https://' + appParts.join('.');
   <body>
     <slot />
 
-    <!-- StudioLayer inline editor: loads only inside the preview iframe. -->
+    <!-- Justmade Studio inline editor: loads only inside the preview iframe. -->
     <script is:inline define:vars={{ appOrigin }}>
       (function () {
         var inPreview = false;
