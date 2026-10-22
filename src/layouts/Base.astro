@@ -1,15 +1,21 @@
 ---
 import '../styles/app.css';
+import { appOrigin, env } from '@/lib/env';
 import { isProdRequest } from '@/lib/host';
 
 interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  /**
+   * The page's language (`<html lang>`). Pass the locale the page's content was
+   * read in, so a multilingual site never labels English copy as Dutch.
+   */
+  lang?: string;
 }
 
-const { title, description = '', ogImage } = Astro.props;
-const site = import.meta.env.PUBLIC_SITE_URL || Astro.url.origin;
+const { title, description = '', ogImage, lang = 'en' } = Astro.props;
+const site = env('PUBLIC_SITE_URL') || Astro.url.origin;
 const canonical = new URL(Astro.url.pathname, site).href;
 
 // Indexing guard: only the canonical production host may be indexed. Any other
@@ -17,14 +23,12 @@ const canonical = new URL(Astro.url.pathname, site).href;
 // X-Robots-Tag header in middleware.ts and the dynamic robots.txt.
 const isProd = isProdRequest(Astro.request, Astro.url);
 
-
-// App origin for the inline-editor embed. Assembled from parts so the literal
-// host is not a single searchable string in the page source.
-const appParts = ['studio', 'justmade', 'be'];
-const appOrigin = 'https://' + appParts.join('.');
+// App origin for the inline-editor embed, handed to the page in parts so the
+// literal host is not a single searchable string in the page source.
+const appParts = new URL(appOrigin()).host.split('.');
 ---
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -42,8 +46,12 @@ const appOrigin = 'https://' + appParts.join('.');
   <body>
     <slot />
 
-    <!-- Justmade Studio inline editor: loads only inside the preview iframe. -->
-    <script is:inline define:vars={{ appOrigin }}>
+    <!--
+      Justmade Studio inline editor: loads only inside an iframe (the studio's
+      preview or the client portal's visual editor) and makes the elements
+      tagged with data-sl-* attributes (src/lib/edit.ts) editable there.
+    -->
+    <script is:inline define:vars={{ appParts }}>
       (function () {
         var inPreview = false;
         try {
@@ -53,7 +61,7 @@ const appOrigin = 'https://' + appParts.join('.');
         }
         if (!inPreview) return;
         var s = document.createElement('script');
-        s.src = appOrigin + '/embed/sl.js';
+        s.src = 'https://' + appParts.join('.') + '/embed/sl.js';
         s.async = true;
         document.head.appendChild(s);
       })();

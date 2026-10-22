@@ -16,16 +16,13 @@
  * <link rel=preload>, og:image). <CdnImage>/<CdnSource> are ergonomic wrappers.
  */
 
-const BASE_URL = import.meta.env.JUSTMADE_BASE_URL || 'https://studio.justmade.be';
-const PROJECT = import.meta.env.JUSTMADE_PROJECT || '';
-const CDN_ORIGIN = import.meta.env.JUSTMADE_CDN_ORIGIN || 'https://cdn.studiolayer.io';
-const BUCKET =
-  (import.meta.env.JUSTMADE_CDN_BUCKET as string | undefined) ||
-  (PROJECT ? `production/projects/${PROJECT}/` : 'production/');
+import { appOrigin, cdnBucket, cdnOrigin } from './env';
 
-const CDN_PREFIX = `${CDN_ORIGIN.replace(/\/$/, '')}/${BUCKET.replace(/^\/+/, '')}`;
-const CDN_ROOT = `${CDN_ORIGIN.replace(/\/$/, '')}/production/`;
-const APP_PREFIX = `${BASE_URL.replace(/\/$/, '')}/`;
+// Same source as the /cdn/ route (src/lib/env.ts), so the key this file emits
+// and the bucket the route resolves it against can never disagree.
+const CDN_PREFIX = `${cdnOrigin()}/${cdnBucket()}`;
+const CDN_ROOT = `${cdnOrigin()}/production/`;
+const APP_PREFIX = `${appOrigin()}/`;
 const ROUTE = '/cdn/';
 
 export type CdnFormat = 'avif' | 'webp' | 'jpeg' | 'png';
@@ -88,8 +85,3 @@ export function cdnSrcSet(
   if (!isProxyable(url)) return '';
   return widths.map((w) => `${cdn(url, { w, f })} ${w}w`).join(', ');
 }
-
-// ─── Back-compat aliases (older code used these names) ───────────────────────
-export const proxied = (url: string | null | undefined) => cdn(url);
-export const imgAtWidth = (url: string | null | undefined, w: number) => cdn(url, w);
-export const srcSet = cdnSrcSet;

@@ -1,11 +1,11 @@
 ---
 import Base from '@/layouts/Base.astro';
-// import { studio, cdn } from '@/lib/studio';
+// import { studio, safe, cdn, slContent, slCollection, slItem } from '@/lib/studio';
 // import CdnImage from '@/components/CdnImage.astro';
 // import CdnSource from '@/components/CdnSource.astro';
 
-// Example: fetch content from Justmade Studio.
-// const posts = await studio.dataset('blog', 'posts').list();
+// Example: fetch content from Justmade Studio (safe() = a CMS hiccup is no 500).
+// const posts = await safe(() => studio.dataset('blog', 'posts').list(), []);
 
 const title = 'Justmade Studio Astro Boilerplate';
 const description = 'Astro SSR + Justmade Studio headless CMS, with same-origin media cloaking.';
@@ -20,11 +20,27 @@ const description = 'Astro SSR + Justmade Studio headless CMS, with same-origin 
       <li>✓ Tailwind 4 via <code>@tailwindcss/vite</code></li>
       <li>✓ Justmade Studio client in <code>src/lib/studio.ts</code></li>
       <li>✓ Media cloaking at <code>/cdn/&lt;uuid&gt;</code> (resize + AVIF/WebP + cache)</li>
+      <li>✓ Inline editing in the studio and the client portal (<code>data-sl-*</code> via <code>src/lib/edit.ts</code>)</li>
       <li>✓ Indexing guard (only the production host is indexable)</li>
       <li>✓ Prod-ready Docker (multi-stage)</li>
     </ul>
 
     {/*
+      Editable content: tag the element that renders the raw value, so the
+      studio's preview and the client portal's visual editor can change it:
+
+      <h2 {...slContent('site', 'home', 'title')}>{home.data.title}</h2>
+
+      An editable list (add, delete, reorder from the page):
+
+      <ul {...slCollection('blog', 'posts')}>
+        {posts.map((p) => (
+          <li {...slItem(p.uid)}>
+            <h3 {...slContent('blog', 'posts', 'title', p.uid)}>{p.data.title}</h3>
+          </li>
+        ))}
+      </ul>
+
       Cloaked image, once you have a CMS URL:
 
       <CdnImage src={post.cover} alt={post.title} width={960}

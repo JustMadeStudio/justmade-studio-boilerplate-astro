@@ -1,31 +1,30 @@
 /**
  * Justmade Studio headless CMS client.
  *
- * Uses @justmade/client. Config is fully env-driven:
+ * Uses @justmade/client. Config is fully env-driven (read through env(), see
+ * src/lib/env.ts for why):
  *   JUSTMADE_API_KEY   - Content API key (store as a secret)
  *   JUSTMADE_BASE_URL  - app origin (default https://studio.justmade.be)
  *
  * Reads target a node + dataset: `studio.dataset('<node>', '<dataset>')`.
- * Media/cloaking helpers live in src/lib/cdn.ts; they are re-exported here for
- * convenience (`import { cdn } from '@/lib/studio'` keeps working).
+ * Media/cloaking helpers live in src/lib/cdn.ts and the inline-editor
+ * attributes in src/lib/edit.ts; both are re-exported here for convenience.
  */
 import { createClient } from '@justmade/client';
-import { assertEnv } from './env';
+import { appOrigin, assertEnv, env } from './env';
 
 // Validate env at boot: throws in prod when a required var is missing, warns in dev.
 assertEnv();
 
-const BASE_URL = import.meta.env.JUSTMADE_BASE_URL || 'https://studio.justmade.be';
-const API_KEY = import.meta.env.JUSTMADE_API_KEY;
-
 export const studio = createClient({
-  baseUrl: BASE_URL,
-  apiKey: API_KEY,
+  baseUrl: appOrigin(),
+  apiKey: env('JUSTMADE_API_KEY'),
+  // Dev: no cache, every read hits the studio so an edit shows on refresh.
+  // Prod keeps the client defaults: reads revalidate against the project's
+  // content stamp at most once a minute, and the 7-day TTL is only the window
+  // in which the last good content keeps being served while the studio is down.
+  cache: !import.meta.env.DEV,
 });
-
-export function clearStudioCache() {
-  studio.clearCache();
-}
 
 /**
  * Safety net around any CMS read. If Justmade Studio hiccups, a single call should
@@ -44,5 +43,5 @@ export async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-// Re-export the media-cloaking helpers so existing imports keep working.
-export { cdn, cdnSrcSet, isProxyable, proxied, imgAtWidth, srcSet, type CdnFormat, type CdnOpts } from './cdn';
+export { cdn, cdnSrcSet, isProxyable, type CdnFormat, type CdnOpts } from './cdn';
+export { slContent, slCollection, slItem } from './edit';

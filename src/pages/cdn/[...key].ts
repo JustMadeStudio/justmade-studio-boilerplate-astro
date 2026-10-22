@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import sharp from 'sharp';
+import { appOrigin, cdnBucket, cdnOrigin } from '@/lib/env';
 
 /**
  * Same-origin media proxy with server-side cloaking, resize + format negotiation.
@@ -26,13 +27,11 @@ import sharp from 'sharp';
 export const prerender = false;
 
 // ─── Config (env-driven) ─────────────────────────────────────────────────────
-const CDN_ORIGIN = (process.env.JUSTMADE_CDN_ORIGIN || 'https://cdn.studiolayer.io').replace(/\/$/, '');
-const APP_ORIGIN = (process.env.JUSTMADE_BASE_URL || 'https://studio.justmade.be').replace(/\/$/, '');
-const PROJECT = process.env.JUSTMADE_PROJECT || '';
-const BUCKET = (
-  process.env.JUSTMADE_CDN_BUCKET ||
-  (PROJECT ? `production/projects/${PROJECT}/` : 'production/')
-).replace(/^\/+/, '');
+// Read through env() like src/lib/cdn.ts: a bucket resolved from another source
+// than the one the helpers used turns every bare /cdn/<uuid> key into a 502.
+const CDN_ORIGIN = cdnOrigin();
+const APP_ORIGIN = appOrigin();
+const BUCKET = cdnBucket();
 
 // Whitelist of allowed upstream hosts. Anything else -> 403.
 const ALLOWED_HOSTS = new Set(

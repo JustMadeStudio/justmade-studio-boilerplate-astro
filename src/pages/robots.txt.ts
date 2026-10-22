@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { env } from '@/lib/env';
 import { isProdRequest } from '@/lib/host';
 
 /**
@@ -8,7 +9,7 @@ import { isProdRequest } from '@/lib/host';
  */
 export const prerender = false;
 
-const SITE_URL = process.env.PUBLIC_SITE_URL || '';
+const SITE_URL = env('PUBLIC_SITE_URL');
 
 export const GET: APIRoute = ({ url, request }) => {
   const isProd = isProdRequest(request, url);

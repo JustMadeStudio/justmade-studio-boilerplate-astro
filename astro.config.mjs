@@ -8,6 +8,9 @@ export default defineConfig({
   output: 'server',
   adapter: node({ mode: 'standalone' }),
   site: process.env.PUBLIC_SITE_URL || 'http://localhost:4321',
+  // Off by default: the toolbar draws over the page in `astro dev`, also inside
+  // the studio's preview iframe, where it sits on top of the inline editor.
+  devToolbar: { enabled: false },
   vite: {
     plugins: [tailwindcss()],
   },

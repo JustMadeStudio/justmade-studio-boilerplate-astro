@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
 
 # --- build stage ---
-FROM node:22-slim AS build
+FROM node:22.23.4-slim AS build
 WORKDIR /app
 
 # cap node heap during build so vite/rolldown can't blow past RAM
 ENV NODE_OPTIONS=--max-old-space-size=1536
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # The build ends with the SEO gate (scripts/seo-gate.mjs), which needs to know
 # the canonical host: without it every page is served noindex and the gate has
@@ -16,16 +16,25 @@ RUN npm install
 # from the host (Coolify build arg / `docker build --build-arg`).
 ARG PUBLIC_SITE_URL
 ENV PUBLIC_SITE_URL=$PUBLIC_SITE_URL
+# The image IS the production build: a missing PUBLIC_SITE_URL fails it here,
+# while a local `npm run build` only skips the gate with a warning.
+ENV SEO_GATE_STRICT=1
 
 COPY . .
 RUN npm run build
 
 # --- runtime stage ---
-FROM node:22-slim AS runtime
+FROM node:22.23.4-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=4321
+
+# Coolify ignores the Dockerfile HEALTHCHECK and runs its own probe via curl/wget
+# inside the container; node:22-slim ships neither, so install curl.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copy ONLY what the runtime needs. NOT src/ - server-side routes must never
 # read from src/ (it does not exist in the container). Runtime assets (fonts

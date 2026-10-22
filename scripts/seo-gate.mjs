@@ -25,6 +25,8 @@
  *   npm run seo:gate      run it by hand against the current build
  *   SEO_GATE=off          skip it entirely (escape hatch, use knowingly)
  *   SEO_GATE_MAX_PAGES=n  cap the crawl (default 25)
+ *   SEO_GATE_STRICT=1     a missing PUBLIC_SITE_URL fails instead of skipping
+ *                         (set in the Dockerfile: the image is the prod build)
  */
 import { spawn } from 'node:child_process';
 import net from 'node:net';
@@ -269,6 +271,17 @@ async function main() {
   }
 
   const siteUrl = (process.env.PUBLIC_SITE_URL || '').trim().replace(/\/$/, '');
+
+  // A local `npm run build` is not a production build: plain node does not load
+  // .env, and locally PUBLIC_SITE_URL points at localhost anyway. Only the
+  // Docker build (SEO_GATE_STRICT=1, see Dockerfile) treats a missing URL as a
+  // blocking fault, so a prod image without it still never ships.
+  const strict = ['1', 'true'].includes((process.env.SEO_GATE_STRICT || '').toLowerCase());
+  if (!siteUrl && !strict) {
+    console.warn('[seo-gate] PUBLIC_SITE_URL not set and not a strict (production) build - skipped.');
+    console.warn('           Run `PUBLIC_SITE_URL=https://example.com npm run build` to check it locally.');
+    return 0;
+  }
   if (!siteUrl) {
     console.error('[seo-gate] FAIL site-url-missing: PUBLIC_SITE_URL is not set.');
     console.error('           Without it every page is served noindex and robots.txt disallows everything,');

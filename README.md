@@ -27,7 +27,7 @@ npm run build
 npm run start             # prod server: node server.mjs
 ```
 
-Node 22 (see `.nvmrc`).
+Node 22.23.4 or newer (see `.nvmrc`; Astro 7.4 requires it).
 
 ## Env
 
@@ -42,6 +42,8 @@ Node 22 (see `.nvmrc`).
 
 `assertEnv()` runs at boot: it throws in production when a required var is missing, so a broken deploy dies at startup instead of serving half a site. In dev it just warns.
 
+Read config through `env()` from `src/lib/env.ts`, never `import.meta.env.X` directly: Vite inlines that at build time, so a secret that only exists in the container's runtime env would be baked in as empty. `env()` reads the runtime value first, then the build/dev one.
+
 ## Content
 
 ```ts
@@ -51,6 +53,44 @@ import { studio, safe } from '@/lib/studio';
 const posts = await safe(() => studio.dataset('blog', 'posts').list(), []);
 const page  = await safe(() => studio.dataset('site', 'pages').get(uid), null);
 ```
+
+In dev the client cache is off, so an edit in the studio shows on the next refresh. In production every read revalidates against the project's content stamp at most once a minute: edits go live on their own, no publish step, no webhook.
+
+### Languages
+
+`@justmade/client` reads in any language the project offers; untranslated fields fall back to the default language, never a blank.
+
+```ts
+const locales = await safe(() => studio.locales(), []);           // default first
+const posts = await safe(() => studio.dataset('blog', 'posts').list({ locale: 'en' }), []);
+```
+
+The studio resolves what you pass (`en`, `en-GB` and `en-US` all reach a configured `en-US`), so the locale can come straight from your URL or `Accept-Language`. Pass the same locale to `<Base lang={...}>` so `<html lang>` matches the copy, and add `hreflang` links once the site serves several languages (the SEO gate reports it).
+
+## Inline editing
+
+The studio edits a site **on the site**: the team in a Surface preview, the customer in the client portal's visual editor. Both load the site in an iframe, where the `sl.js` embed (injected by `Base.astro`, dormant outside an iframe) makes every tagged element editable. What you do not tag, nobody can edit from the page.
+
+```astro
+---
+import { slContent, slCollection, slItem } from '@/lib/studio';
+---
+<h1 {...slContent('site', 'home', 'title')}>{home.data.title}</h1>
+
+<ul {...slCollection('blog', 'posts')}>
+  {posts.map((p) => (
+    <li {...slItem(p.uid)}>
+      <h2 {...slContent('blog', 'posts', 'title', p.uid)}>{p.data.title}</h2>
+    </li>
+  ))}
+</ul>
+```
+
+- `slContent(node, dataset, field, recordUid?)` - leave the uid out for a single dataset, a collection needs it. Fields nest and index: `seo.title`, `tags[0]`, `members[1].name`.
+- The tagged element must render the **raw** value. A formatted date, an excerpt or rendered markdown binds read-only, because writing the rendered text back would corrupt the record.
+- One path on one element; a value rendered twice is tagged once.
+- `slCollection` + `slItem` let people add, delete and reorder records from the page. Reordering is only offered when the page shows the stored order.
+- Inline text editing covers text, plain textarea, email, url and number fields. A single image field is swapped in place; a gallery entry is changed in the CMS (the editor matches gallery images on their CDN URL, which `/cdn/` hides).
 
 ## Images
 
@@ -111,9 +151,10 @@ The split is deliberate: **machine-objective and indexing-determining is a fail,
 npm run seo:gate            # run it against the current build
 SEO_GATE=off npm run build  # escape hatch, use knowingly
 SEO_GATE_MAX_PAGES=100      # crawl deeper than the default 25
+SEO_GATE_STRICT=1           # a missing PUBLIC_SITE_URL fails instead of skipping
 ```
 
-Pass `PUBLIC_SITE_URL` as a build arg (the Dockerfile takes one), or the gate fails the image build. Without CMS credentials at build time the gate still runs and checks page structure, with content unavailable.
+Pass `PUBLIC_SITE_URL` as a build arg (the Dockerfile takes one), or the gate fails the image build: the Dockerfile sets `SEO_GATE_STRICT=1`. A local `npm run build` without `PUBLIC_SITE_URL` skips the gate with a warning instead; run `PUBLIC_SITE_URL=https://example.com npm run build` to check it locally. Without CMS credentials at build time the gate still runs and checks page structure, with content unavailable.
 
 This is layer 1. Everything a script cannot judge - keyword mapping, URL structure, internal linking, schema choice - is layer 2: a human SEO review that blocks go-live separately.
 
@@ -121,7 +162,7 @@ This is layer 1. Everything a script cannot judge - keyword mapping, URL structu
 
 ```
 src/
-  lib/        studio (CMS + safe), cdn (cloak helpers), host (indexing), env
+  lib/        studio (CMS + safe), cdn (cloak helpers), edit (inline-editor tags), host (indexing), env
   pages/      cdn/[...key], robots.txt, sitemap.xml, health, 404, index
   components/ CdnImage, CdnSource
   layouts/    Base (head, OG, sl.js embed)
@@ -135,11 +176,11 @@ Dockerfile    multi-stage build + healthcheck
 
 ## Deploy
 
-Any host that runs a container or a node process. Build the image, set the env, expose port `4321`. The container ships only `dist/`, `node_modules`, `server.mjs` and `package.json` - **never `src/`**, so server-side routes must not read from the filesystem (put runtime assets in `public/`).
+Any host that runs a container or a node process. Build the image, set the env, expose port `4321`. The image installs with `npm ci`, so commit `package-lock.json` written by npm 10 (Node 22, see `.nvmrc`): a lockfile from a newer npm major can fail `npm ci` on the build. It ships `curl` because Coolify ignores the Dockerfile `HEALTHCHECK` and probes `/health` with curl itself. The container ships only `dist/`, `node_modules`, `server.mjs` and `package.json` - **never `src/`**, so server-side routes must not read from the filesystem (put runtime assets in `public/`).
 
 ## For agents
 
-`AGENTS.md` holds the hard rules (SSR-only, media through `/cdn/`, don't break the indexing guard, keep the `sl.js` embed) and a definition-of-done checklist. Read it before editing.
+`AGENTS.md` holds the hard rules (SSR-only, config through `env()`, media through `/cdn/`, don't break the indexing guard, keep the `sl.js` embed, tag editable content) and a definition-of-done checklist. Read it before editing.
 
 ## Docs
 

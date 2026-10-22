@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { env } from '@/lib/env';
 import { isProdRequest, prodHost } from '@/lib/host';
 // import { studio, safe } from '@/lib/studio';
 
@@ -11,7 +12,7 @@ import { isProdRequest, prodHost } from '@/lib/host';
  */
 export const prerender = false;
 
-const SITE_URL = (process.env.PUBLIC_SITE_URL || '').replace(/\/$/, '');
+const SITE_URL = env('PUBLIC_SITE_URL').replace(/\/$/, '');
 
 export const GET: APIRoute = async ({ url, request }) => {
   const host = prodHost();

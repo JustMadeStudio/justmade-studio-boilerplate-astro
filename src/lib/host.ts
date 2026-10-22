@@ -1,3 +1,5 @@
+import { env } from './env';
+
 /**
  * Resolve the real request host.
  *
@@ -16,7 +18,7 @@ export function requestHost(request: Request, fallbackUrl?: URL): string {
 
 /** Canonical production host from PUBLIC_SITE_URL, or null if unset/invalid. */
 export function prodHost(): string | null {
-  const site = process.env.PUBLIC_SITE_URL || import.meta.env.PUBLIC_SITE_URL || '';
+  const site = env('PUBLIC_SITE_URL');
   if (!site) return null;
   try {
     return new URL(site).host.toLowerCase();

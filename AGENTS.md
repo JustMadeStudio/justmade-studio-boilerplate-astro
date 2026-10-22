@@ -48,7 +48,8 @@ Docs to consult before touching framework behaviour:
 4. **Never hardcode or commit secrets.** `JUSTMADE_API_KEY` and friends come
    from env only. `.env` is gitignored; only `.env.example` is committed. When a
    new secret is needed, add it to `.env.example` (empty), document it in the
-   README table, and register it in `src/lib/env.ts` if it is required at boot.
+   README table, add it to `env()` in `src/lib/env.ts`, and to `RULES` there if
+   it is required at boot.
 
 5. **Don't break the indexing guard.** Only the canonical `PUBLIC_SITE_URL` host
    may be indexed; every preview/staging host must stay `noindex`. The logic
@@ -59,8 +60,25 @@ Docs to consult before touching framework behaviour:
    real host is in `x-forwarded-host`).
 
 6. **Keep the `sl.js` embed.** `Base.astro` injects the Justmade Studio inline-editor
-   script, but only inside the preview iframe (`window.self !== window.top`).
-   This powers Surfaces / inline editing. Don't remove it or load it eagerly.
+   script, but only inside an iframe (`window.self !== window.top`): the
+   studio's Surface preview and the client portal's visual editor. Don't
+   remove it or load it eagerly, and keep `frame-ancestors` in `middleware.ts`
+   allowing the studio host and its apex (the portal lives on a sibling host).
+
+7. **Tag every CMS value a person should be able to change.** Use
+   `slContent()` / `slCollection()` / `slItem()` from `src/lib/edit.ts` on the
+   element that renders the value, where the data is bound. An untagged value
+   cannot be edited from the page, by the team or by the customer. The tagged
+   element renders the RAW stored value (no formatting, truncation or rendered
+   markdown, or the binding is read-only), one path sits on one element, and a
+   list field is tagged per entry (`tags[0]`). See the Inline editing section
+   of README.md.
+
+8. **Read config through `env()`** from `src/lib/env.ts`, never
+   `import.meta.env.X` or `process.env.X` directly. Vite inlines
+   `import.meta.env.X` at build time (a runtime-only secret ends up empty), and
+   `astro dev` only puts `.env` on `import.meta.env`. A new variable gets an
+   entry in `BUILD_ENV` and `EnvKey` there.
 
 ## Where things live
 
@@ -68,7 +86,8 @@ Docs to consult before touching framework behaviour:
 src/lib/studio.ts          CMS client + safe() fallback + boot env check
 src/lib/cdn.ts             cloak helpers: cdn(), cdnSrcSet(), isProxyable()
 src/lib/host.ts            request-host resolver + prod check (indexing guard)
-src/lib/env.ts             boot-time env validation (throws in prod when missing)
+src/lib/env.ts             env() reader + boot-time env validation (throws in prod when missing)
+src/lib/edit.ts            inline-editor tags: slContent(), slCollection(), slItem()
 src/pages/cdn/[...key].ts   media proxy (cloaking + resize + AVIF/WebP + cache)
 src/pages/robots.txt.ts     dynamic robots.txt (prod-only crawl)
 src/pages/sitemap.xml.ts    dynamic sitemap (prod-only, wire up your routes)
@@ -104,6 +123,13 @@ const posts = await safe(() => studio.dataset('blog', 'posts').list(), []);
 const page  = await safe(() => studio.dataset('site', 'pages').get(uid), null);
 ```
 
+## Languages
+
+Projects can offer several languages. Pass a locale on reads
+(`studio.dataset('blog', 'posts').list({ locale: 'en' })`, or list them with
+`studio.locales()`); untranslated fields fall back to the default language.
+Hand the same locale to `<Base lang={...}>`.
+
 ## Commands
 
 ```bash
@@ -122,3 +148,4 @@ npm run start    # prod server (node server.mjs)
 - [ ] New media renders through `/cdn/…`
 - [ ] No secret value committed; new env vars added to `.env.example` + README
 - [ ] Preview host still `noindex`, production host still indexable
+- [ ] Every CMS value a person should change is tagged (`slContent` and friends) and renders the raw value
